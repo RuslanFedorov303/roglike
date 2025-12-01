@@ -1,43 +1,27 @@
-# зробити ворога:
-# створити для нього функцію bot_random_move
-# додати кількох ворогів
-# зробити колізію куль
-# зробити отримання урону та вихід з гри для гравця
-# а потім і для ворогів
-
-# зробити стіни:
-# створити клас для них під назвою Walls
-# реалізувати колізію
-
-# зробити меню:
-# створити головне меню
-# додати кнопку Start
-# у грі, якщо натиснути клавішу Esc, має бути пауза
-# у паузі можна повернутися в головне меню
-# якщо у паузі знову натиснути Esc — гра продовжиться
-
-# зробити класи для раундів:
-# додати покращення характеристик гравця після кожного раунду
-    # створити список покращень
-    # випадково вибирати покращення зі списку
-# зробити ануляцію покращень після програшу
-
-# додати музику та звуки
-
-# організувати код:
-# зробити відступи у своєму стилі
-# змінити назви змінних
-# додати коментарі
-# https://github.com/RuslanFedorov303/roglike.git
-
-
 from classes import *
 
 
 
 player_img = pygame.image.load("Green_tank.png")
-player_image = small_image = pygame.transform.scale(player_img, (70, 70))
+player_image = pygame.transform.scale(player_img, (70, 70))
 player = Entiti(0, 200, 30, 30, player_image, 100, 30, "right")
+
+
+tank_img = pygame.image.load("Red_tank.png")
+tank_image = pygame.transform.scale(tank_img, (70, 70))
+tank1 = Bot(1000, 200, 30, 30, tank_image, 100, 30, 'red')
+tank2 = Bot(1000, 300, 30, 30, tank_image, 100, 30, 'red')
+tank3 = Bot(1000, 400, 30, 30, tank_image, 100, 30, 'red')
+
+all_tanks = [player, tank1, tank2, tank3]
+tanks =[tank1, tank2, tank3]
+
+
+wall_img = pygame.image.load("Wall.png")
+wall_image = pygame.transform.scale(wall_img, (40, 40))
+wall1 = Object(500, 300, 30, 30, wall_image)
+
+walls = [wall1]
 
 
 img_fon = pygame.image.load("BG.jpg")
@@ -61,7 +45,8 @@ while running:
 
 
     # відображення
-
+    if player.hp <= 0:
+        running = False
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_a]:
@@ -92,12 +77,24 @@ while running:
     fon.draw(screen)
     player.draw(screen)
 
+
+    for tank in tanks:
+        if not tank.hp <= 0:
+            tank.bot_random_rotate()
+            tank.collide_bullets(bullets, all_tanks)
+            tank.shot(tank.directore)
+            tank.draw(screen)
+
+
     for bullet in bullets:
         if len(bullets) > 99:
             del bullets[0]
         bullet.update()
         bullet.draw(screen)
 
+
+    for wall in walls:
+        wall.draw(screen)
 
     # оновлення дисплея
     pygame.display.flip()
