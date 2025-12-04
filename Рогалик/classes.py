@@ -1,37 +1,10 @@
 import pygame
 import random
 import  time
+pygame.init()
 
 
 bullets = []
-
-
-
-# ---------- Пулі ---------- #
-class Bullet:
-    def __init__(self, x, y, direction, comand, damage, speed=8):
-        self.rect = pygame.Rect(x, y, 10, 10)
-        self.direction = direction
-        self.speed = speed
-        self.comand = comand
-        self.damage = damage
-        self.img = pygame.image.load("Bullet.png")
-
-        if self.direction == "up":      self.img = pygame.transform.rotate(self.img, 90)
-        elif self.direction == "down":  self.img = pygame.transform.rotate(self.img, 270)
-        elif self.direction == "left":  self.img = pygame.transform.rotate(self.img, 180)
-        elif self.direction == "right": self.img = pygame.transform.rotate(self.img, 0)
-
-
-    def update(self):
-        if self.direction == "up":      self.rect.y -= self.speed
-        elif self.direction == "down":  self.rect.y += self.speed
-        elif self.direction == "left":  self.rect.x -= self.speed
-        elif self.direction == "right": self.rect.x += self.speed
-
-
-    def draw(self, screen):
-        screen.blit(self.img, (self.rect.left, self.rect.top))
 
 
 
@@ -49,7 +22,7 @@ class Object:
 
 
 
-# ---------- Опоненти та игрок ---------- #
+# ---------- Ентіті ---------- #
 class Entiti(Object):
     def __init__(self, x, y, width, height, img, hp, damage, comand, defoult_directore="left"):
         super().__init__(x, y, width, height, img)
@@ -61,17 +34,15 @@ class Entiti(Object):
         self.end_time = 0
 
 
-    def shot(self, direction):
-        global bulletsdd
-
+    def shot(self, directore):
         self.end_time = time.time()
         duration = self.end_time - self.start_time
 
         if duration >= 0.7:
-            if direction == 'up':      bullets.append(Bullet(self.rect.centerx, self.rect.centery, "up", self.comand, 30))
-            elif direction == 'down':  bullets.append(Bullet(self.rect.centerx, self.rect.centery, "down", self.comand, 30))
-            elif direction == 'left':  bullets.append(Bullet(self.rect.centerx, self.rect.centery, "left", self.comand, 30))
-            elif direction == 'right': bullets.append(Bullet(self.rect.centerx, self.rect.centery, "right", self.comand, 30))
+            if directore == 'up':      bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "up", self.comand, self.damage))
+            elif directore == 'down':  bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "down", self.comand, self.damage))
+            elif directore == 'left':  bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "left", self.comand, self.damage))
+            elif directore == 'right': bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "right", self.comand, self.damage))
             self.start_time = time.time()
 
 
@@ -84,7 +55,18 @@ class Entiti(Object):
                     bullets.remove(bullet)
 
 
+    def colide_walls(self, walls, tanks):
+        for wall in walls:
+            for tank in tanks:
+                if tank.rect.colliderect(wall.rect):
+                    if tank.directore == 'up':      tank.rect.y += 3
+                    elif tank.directore == 'down':  tank.rect.y -= 3
+                    elif tank.directore == 'left':  tank.rect.x += 3
+                    elif tank.directore == 'right': tank.rect.x -= 3
 
+
+
+# ---------- Вороги ---------- #
 class Bot(Entiti):
     def __init__(self, x, y, width, height, img, hp, damage, comand, defoult_directore="left"):
         super().__init__(x, y, width, height, img, hp, damage, comand, defoult_directore="left")
@@ -135,7 +117,6 @@ class Bot(Entiti):
 
 
     def bot_move(self):
-    #    def colide_wall():
         if self.directore == "up":      self.rect.y -= 3
         elif self.directore == "down":  self.rect.y += 3
         elif self.directore == "left":  self.rect.x -= 3
@@ -143,11 +124,37 @@ class Bot(Entiti):
 
 
 
+# ---------- Пулі ---------- #
+class Bullet(Object):
+    def __init__(self, x, y, width, height, direction, comand, damage, speed=8):
+        super().__init__(x, y, width, height)
+        self.direction = direction
+        self.speed = speed
+        self.comand = comand
+        self.damage = damage
+        self.img = pygame.image.load("Bullet.png")
+
+        if self.direction == "up":      self.img = pygame.transform.rotate(self.img, 90)
+        elif self.direction == "down":  self.img = pygame.transform.rotate(self.img, 270)
+        elif self.direction == "left":  self.img = pygame.transform.rotate(self.img, 180)
+        elif self.direction == "right": self.img = pygame.transform.rotate(self.img, 0)
+
+
+    def update(self):
+        if self.direction == "up":      self.rect.y -= self.speed
+        elif self.direction == "down":  self.rect.y += self.speed
+        elif self.direction == "left":  self.rect.x -= self.speed
+        elif self.direction == "right": self.rect.x += self.speed
+
+
+    def draw(self, screen):
+        screen.blit(self.img, (self.rect.left, self.rect.top))
 
 
 
-
-
+class Round:
+    def __init__(self):
+        self.
 
 
 
@@ -157,14 +164,16 @@ class Bot(Entiti):
 
 # ---------- Текст для гри ---------- #
 class Label:
-    def __init__(self, x, y, size, color="black", default_text="text"):
+    def __init__(self, x, y, size, default_text="text" ,color="black"):
         self.font = pygame.font.Font(None, size)
         self.coord = (x, y)
         self.color = color
         self.set_text(default_text)
 
+
     def set_text(self, text):
         self.image = self.font.render(text, True, self.color)
+
 
     def draw(self, screen):
         screen.blit(self.image, self.coord)
@@ -177,12 +186,12 @@ class Button:
         self.rect = pygame.Rect(x, y, w, 50)
         self.rect_image = pygame.Surface((w, 50))
 
-        self.rect_image.fill(BLUE)
+        self.rect_image.fill((0, 0, 0))
         self.rect_image_active = pygame.Surface((w, 50))
-        self.rect_image_active.fill(GREEN)
+        self.rect_image_active.fill((0, 0, 0))
 
         self.font = pygame.font.Font(None, 32)
-        self.text_image = self.font.render(text, True, RED)
+        self.text_image = self.font.render(text, True, (100, 0, 0))
         self.text_rect = self.text_image.get_rect()
 
         self.text_rect.x = self.rect.x + 20
