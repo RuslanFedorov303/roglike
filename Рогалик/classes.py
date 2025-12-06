@@ -10,6 +10,72 @@ clock = pygame.time.Clock()
 
 
 
+# ---------- Текст для гри ---------- #
+class Label:
+    def __init__(self, x, y, size, default_text="text" ,color="black"):
+        self.font = pygame.font.Font(None, size)
+        self.coord = (x, y)
+        self.color = color
+        self.set_text(default_text)
+
+
+    def set_text(self, text):
+        self.image = self.font.render(text, True, self.color)
+
+
+    def draw(self, screen):
+        screen.blit(self.image, self.coord)
+
+
+
+# ---------- Кнопки для гри ---------- #
+class Button:
+    def __init__(self, x, y, text, w):
+        self.rect = pygame.Rect(x, y, w, 50)
+        self.rect_image = pygame.Surface((w, 50))
+
+        self.rect_image.fill((0, 0, 0))
+        self.rect_image_active = pygame.Surface((w, 50))
+        self.rect_image_active.fill((0, 0, 0))
+
+        self.font = pygame.font.Font(None, 32)
+        self.text_image = self.font.render(text, True, (100, 0, 0))
+        self.text_rect = self.text_image.get_rect()
+
+        self.text_rect.x = self.rect.x + 20
+        self.text_rect.y = y+5
+        self.active = False
+        self.fn = None
+
+
+    def update(self):
+        x, y = pygame.mouse.get_pos()
+        collision = self.rect.collidepoint(x, y)
+        if collision:
+            self.active = True
+            click = pygame.mouse.get_pressed()[0]
+
+            if click and self.fn:
+                self.fn()
+
+        else:
+            self.active = False
+
+
+    def draw(self, surface):
+        if self.active:
+            surface.blit(self.rect_image, (self.rect.x, self.rect.y))
+
+        else:
+            surface.blit(self.rect_image_active, (self.rect.x, self.rect.y))
+        surface.blit(self.text_image, (self.text_rect.x, self.text_rect.y))
+
+
+    def onclick(self, fn):
+        self.fn = fn
+
+
+
 # ---------- Базовий клас ---------- #
 class Object:
     def __init__(self, x, y, width, height, img=""):
@@ -48,23 +114,21 @@ class Entiti(Object):
             self.start_time = time.time()
 
 
-    def collide_bullets(self, bullets_c, tanks):
+    def collide_bullets(self, bullets_c):
         global bullets
         for bullet in bullets_c:
-            for tank in tanks:
-                if bullet.rect.colliderect(tank.rect) and bullet.comand != tank.comand:
-                    tank.hp -= bullet.damage
-                    bullets.remove(bullet)
+            if self.rect.colliderect(bullet.rect) and bullet.comand != self.comand:
+                self.hp -= bullet.damage
+                bullets.remove(bullet)
 
 
-    def colide_walls(self, walls, tanks):
+    def collide_walls(self, walls):
         for wall in walls:
-            for tank in tanks:
-                if tank.rect.colliderect(wall.rect):
-                    if tank.directore == 'up':      tank.rect.y += 3
-                    elif tank.directore == 'down':  tank.rect.y -= 3
-                    elif tank.directore == 'left':  tank.rect.x += 3
-                    elif tank.directore == 'right': tank.rect.x -= 3
+            if self.rect.colliderect(wall.rect):
+                if self.directore == 'up':      tank.rect.y += 3
+                elif self.directore == 'down':  tank.rect.y -= 3
+                elif self.directore == 'left':  tank.rect.x += 3
+                elif self.directore == 'right': tank.rect.x -= 3
 
 
 
@@ -156,18 +220,19 @@ class Bullet(Object):
 
 # ---------- Раунди ---------- #
 class Round:
-    def __init__(self, tanks, player, fon, coords_walls, wall_image, player_image):
+    def __init__(self, tanks, coords_walls, player, fon, wall_image, player_image):
         self.player = player
         self.player_image = player_image
         self.fon = fon
+        self.font = Label(550, 300, 80, "Pause")
         self.tanks = []
-        self.all_tanks = [self.player]
+        # self.all_tanks = [self.player]
         self.walls = []
 
 
         for x, y, width, height, image, hp, damage, comand in tanks:
             self.tanks.append(Bot(x, y, width, height, image, hp, damage, comand))
-            self.all_tanks.append(Bot(x, y, width, height, image, hp, damage, comand))
+            # self.all_tanks.append(Bot(x, y, width, height, image, hp, damage, comand))
 
 
         for x, y in coords_walls:
@@ -187,6 +252,21 @@ class Round:
 
 
             self.fon.draw(screen)
+            self.player.draw(screen)
+
+            for tank in self.tanks:
+                if not tank.hp <= 0:
+                    tank.draw(screen)
+
+
+            for bullet in bullets:
+                bullet.draw(screen)
+
+
+            for wall in self.walls:
+                wall.draw(screen)
+
+
             pygame.display.flip()
             clock.tick(50)
 
@@ -207,8 +287,11 @@ class Round:
 
 
             # відображення
+            if len(self.tanks) == 0:
+                return True
+
             if self.player.hp <= 0:
-                return
+                return False
 
 
             keys = pygame.key.get_pressed()
@@ -238,17 +321,19 @@ class Round:
 
 
             self.fon.draw(screen)
-            self.player.colide_walls(self.walls, self.all_tanks)
+            self.player.collide_bullets(bullets)
+            self.player.collide_walls(self.walls)
             self.player.draw(screen)
 
 
             for tank in self.tanks:
-                if not tank.hp <= 0:
-                    tank.bot_random_rotate()
-                    tank.collide_bullets(bullets, self.all_tanks)
-                    tank.shot(tank.directore)
-                    tank.colide_walls(self.walls, self.all_tanks)
-                    tank.draw(screen)
+                if tank.hp <= 0:
+                    self.tanks.remove(tank)
+                tank.bot_random_rotate()
+                tank.collide_bullets(bullets)
+                tank.shot(tank.directore)
+                tank.collide_walls(self.walls)
+                tank.draw(screen)
 
 
             for bullet in bullets:
@@ -268,66 +353,4 @@ class Round:
 
 
 
-# ---------- Текст для гри ---------- #
-class Label:
-    def __init__(self, x, y, size, default_text="text" ,color="black"):
-        self.font = pygame.font.Font(None, size)
-        self.coord = (x, y)
-        self.color = color
-        self.set_text(default_text)
 
-
-    def set_text(self, text):
-        self.image = self.font.render(text, True, self.color)
-
-
-    def draw(self, screen):
-        screen.blit(self.image, self.coord)
-
-
-
-# ---------- Кнопки для гри ---------- #
-class Button:
-    def __init__(self, x, y, text, w):
-        self.rect = pygame.Rect(x, y, w, 50)
-        self.rect_image = pygame.Surface((w, 50))
-
-        self.rect_image.fill((0, 0, 0))
-        self.rect_image_active = pygame.Surface((w, 50))
-        self.rect_image_active.fill((0, 0, 0))
-
-        self.font = pygame.font.Font(None, 32)
-        self.text_image = self.font.render(text, True, (100, 0, 0))
-        self.text_rect = self.text_image.get_rect()
-
-        self.text_rect.x = self.rect.x + 20
-        self.text_rect.y = y+5
-        self.active = False
-        self.fn = None
-
-
-    def update(self):
-        x, y = pygame.mouse.get_pos()
-        collision = self.rect.collidepoint(x, y)
-        if collision:
-            self.active = True
-            click = pygame.mouse.get_pressed()[0]
-
-            if click and self.fn:
-                self.fn()
-
-        else:
-            self.active = False
-
-
-    def draw(self, surface):
-        if self.active:
-            surface.blit(self.rect_image, (self.rect.x, self.rect.y))
-
-        else:
-            surface.blit(self.rect_image_active, (self.rect.x, self.rect.y))
-        surface.blit(self.text_image, (self.text_rect.x, self.text_rect.y))
-
-
-    def onclick(self, fn):
-        self.fn = fn
