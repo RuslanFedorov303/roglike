@@ -5,6 +5,8 @@ pygame.init()
 
 
 bullets = []
+screen = pygame.display.set_mode((1300, 700))
+clock = pygame.time.Clock()
 
 
 
@@ -152,13 +154,117 @@ class Bullet(Object):
 
 
 
+# ---------- Раунди ---------- #
 class Round:
-    def __init__(self):
-        self.
+    def __init__(self, tanks, player, fon, coords_walls, wall_image, player_image):
+        self.player = player
+        self.player_image = player_image
+        self.fon = fon
+        self.tanks = []
+        self.all_tanks = [self.player]
+        self.walls = []
 
 
+        for x, y, width, height, image, hp, damage, comand in tanks:
+            self.tanks.append(Bot(x, y, width, height, image, hp, damage, comand))
+            self.all_tanks.append(Bot(x, y, width, height, image, hp, damage, comand))
 
 
+        for x, y in coords_walls:
+            self.walls.append(Object(x, y, 30, 30, wall_image))
+
+
+    def pause(self):
+        while True:
+            # обробка подій
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
+
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_ESCAPE:
+                        return
+
+
+            self.fon.draw(screen)
+            pygame.display.flip()
+            clock.tick(50)
+
+
+    def game(self):
+        while True:
+            # обробка подій
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
+
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_ESCAPE:
+                        self.pause()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    self.player.shot(self.player.directore)
+
+
+            # відображення
+            if self.player.hp <= 0:
+                return
+
+
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_a]:
+                new_img = pygame.transform.rotate(self.player_image, 180)
+                self.player.img = new_img
+                self.player.rect.x -= 3
+                self.player.directore = "left"
+
+            if keys[pygame.K_d]:
+                new_img = pygame.transform.rotate(self.player_image, 0)
+                self.player.img = new_img
+                self.player.rect.x += 3
+                self.player.directore = "right"
+
+            if keys[pygame.K_w]:
+                new_img = pygame.transform.rotate(self.player_image, 90)
+                self.player.img = new_img
+                self.player.rect.y -= 3
+                self.player.directore = "up"
+
+            if keys[pygame.K_s]:
+                new_img = pygame.transform.rotate(self.player_image, 270)
+                self.player.img = new_img
+                self.player.rect.y += 3
+                self.player.directore = "down"
+
+
+            self.fon.draw(screen)
+            self.player.colide_walls(self.walls, self.all_tanks)
+            self.player.draw(screen)
+
+
+            for tank in self.tanks:
+                if not tank.hp <= 0:
+                    tank.bot_random_rotate()
+                    tank.collide_bullets(bullets, self.all_tanks)
+                    tank.shot(tank.directore)
+                    tank.colide_walls(self.walls, self.all_tanks)
+                    tank.draw(screen)
+
+
+            for bullet in bullets:
+                if len(bullets) > 99:
+                    del bullets[0]
+                bullet.update()
+                bullet.draw(screen)
+
+
+            for wall in self.walls:
+                wall.draw(screen)
+
+
+            # оновлення дисплея
+            pygame.display.flip()
+            clock.tick(50)
 
 
 
