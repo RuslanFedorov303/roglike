@@ -43,7 +43,7 @@ class Button:
         self.text_rect = self.text_image.get_rect()
 
         self.text_rect.x = self.rect.x + 20
-        self.text_rect.y = y+5
+        self.text_rect.y = y + 5
         self.active = False
         self.fn = None
 
@@ -92,9 +92,10 @@ class Object:
 
 # ---------- Ентіті ---------- #
 class Entiti(Object):
-    def __init__(self, x, y, width, height, img, hp, damage, comand, defoult_directore="left"):
+    def __init__(self, x, y, width, height, img="", hp=100, speed=3, damage=30, comand="red", defoult_directore="left"):
         super().__init__(x, y, width, height, img)
         self.hp = hp
+        self.speed = speed
         self.damage = damage
         self.directore = defoult_directore
         self.comand = comand
@@ -115,7 +116,7 @@ class Entiti(Object):
 
 
     def collide_bullets(self, bullets_c):
-        global bullets
+        # global bullets
         for bullet in bullets_c:
             if self.rect.colliderect(bullet.rect) and bullet.comand != self.comand:
                 self.hp -= bullet.damage
@@ -125,17 +126,17 @@ class Entiti(Object):
     def collide_walls(self, walls):
         for wall in walls:
             if self.rect.colliderect(wall.rect):
-                if self.directore == 'up':      tank.rect.y += 3
-                elif self.directore == 'down':  tank.rect.y -= 3
-                elif self.directore == 'left':  tank.rect.x += 3
-                elif self.directore == 'right': tank.rect.x -= 3
+                if self.directore == 'up':      self.rect.y += self.speed
+                elif self.directore == 'down':  self.rect.y -= self.speed
+                elif self.directore == 'left':  self.rect.x += self.speed
+                elif self.directore == 'right': self.rect.x -= self.speed
 
 
 
 # ---------- Вороги ---------- #
 class Bot(Entiti):
-    def __init__(self, x, y, width, height, img, hp, damage, comand, defoult_directore="left"):
-        super().__init__(x, y, width, height, img, hp, damage, comand, defoult_directore="left")
+    def __init__(self, x, y, width, height, img="", hp=100, speed=3, damage=30, comand="red", defoult_directore="left"):
+        super().__init__(x, y, width, height, img, hp, speed, damage, comand, defoult_directore)
         self.start_time_botMove = time.time()
         self.end_time_botMove = 0
         self.directore = defoult_directore
@@ -150,28 +151,28 @@ class Bot(Entiti):
 
         if self.directore == 'up':
             if not self.rect.y < 0:
-                self.rect.y -= 3
+                self.rect.y -= self.speed
 
             new_img = pygame.transform.rotate(self.tank_image, 90)
             self.img = new_img
 
         elif self.directore == 'down':
             if not self.rect.y > 600:
-                self.rect.y += 3
+                self.rect.y += self.speed
 
             new_img = pygame.transform.rotate(self.tank_image, 270)
             self.img = new_img
 
         elif self.directore == 'left':
             if not self.rect.x < 0:
-                self.rect.x -= 3
+                self.rect.x -= self.speed
 
             new_img = pygame.transform.rotate(self.tank_image, 180)
             self.img = new_img
 
         elif self.directore == 'right':
             if not self.rect.x > 1200:
-                self.rect.x += 3
+                self.rect.x += self.speed
 
             new_img = pygame.transform.rotate(self.tank_image, 0)
             self.img = new_img
@@ -183,10 +184,10 @@ class Bot(Entiti):
 
 
     def bot_move(self):
-        if self.directore == "up":      self.rect.y -= 3
-        elif self.directore == "down":  self.rect.y += 3
-        elif self.directore == "left":  self.rect.x -= 3
-        elif self.directore == "right": self.rect.x += 3
+        if self.directore == "up":      self.rect.y -= self.speed
+        elif self.directore == "down":  self.rect.y += self.speed
+        elif self.directore == "left":  self.rect.x -= self.speed
+        elif self.directore == "right": self.rect.x += self.speed
 
 
 
@@ -226,13 +227,11 @@ class Round:
         self.fon = fon
         self.font = Label(550, 300, 80, "Pause")
         self.tanks = []
-        # self.all_tanks = [self.player]
         self.walls = []
 
 
-        for x, y, width, height, image, hp, damage, comand in tanks:
-            self.tanks.append(Bot(x, y, width, height, image, hp, damage, comand))
-            # self.all_tanks.append(Bot(x, y, width, height, image, hp, damage, comand))
+        for x, y, width, height, image, hp, speed, damage, comand, defoult_directore in tanks:
+            self.tanks.append(Bot(x, y, width, height, image, hp, speed, damage, comand, defoult_directore))
 
 
         for x, y in coords_walls:
@@ -298,25 +297,25 @@ class Round:
             if keys[pygame.K_a]:
                 new_img = pygame.transform.rotate(self.player_image, 180)
                 self.player.img = new_img
-                self.player.rect.x -= 3
+                self.player.rect.x -= self.player.speed
                 self.player.directore = "left"
 
-            if keys[pygame.K_d]:
+            elif keys[pygame.K_d]:
                 new_img = pygame.transform.rotate(self.player_image, 0)
                 self.player.img = new_img
-                self.player.rect.x += 3
+                self.player.rect.x += self.player.speed
                 self.player.directore = "right"
 
-            if keys[pygame.K_w]:
+            elif keys[pygame.K_w]:
                 new_img = pygame.transform.rotate(self.player_image, 90)
                 self.player.img = new_img
-                self.player.rect.y -= 3
+                self.player.rect.y -= self.player.speed
                 self.player.directore = "up"
 
-            if keys[pygame.K_s]:
+            elif keys[pygame.K_s]:
                 new_img = pygame.transform.rotate(self.player_image, 270)
                 self.player.img = new_img
-                self.player.rect.y += 3
+                self.player.rect.y += self.player.speed
                 self.player.directore = "down"
 
 
@@ -350,7 +349,4 @@ class Round:
             # оновлення дисплея
             pygame.display.flip()
             clock.tick(50)
-
-
-
-
+            print(self.player.hp)
