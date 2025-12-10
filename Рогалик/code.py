@@ -5,7 +5,7 @@ from classes import *
 
 player_img = pygame.image.load("Green_tank.png")
 player_image = pygame.transform.scale(player_img, (70, 70))
-player = Entiti(0, 200, 30, 30, player_image, 10000, 30, "green", "right")
+player = Entiti(0, 200, 30, 30, player_image, 10, 3, 300, "green", "right")
 
 
 tank_img = pygame.image.load("Red_tank.png")
@@ -32,20 +32,11 @@ fon = Object(0, 0, 1000, 1000, img_fon)
 # button_menu = Button(600, 350, "Вийти в меню", 40)
 
 
-tanks = [
-    [1000, 200, 30, 30, tank_image, 100, 30, "red"],
-    [1000, 300, 30, 30, tank_image, 100, 30, "red"],
-    [1000, 400, 30, 30, tank_image, 100, 30, "red"]
-]
 
 round1 = Round(
     [
-    [1000, 200, 30, 30, tank_image, 100, 30, "red"],
-    [1000, 300, 30, 30, tank_image, 100, 30, "red"],
-    [1000, 400, 30, 30, tank_image, 100, 30, "red"],
-    [800, 200, 30, 30, tank_image, 100, 30, "red"],
-    [800, 300, 30, 30, tank_image, 100, 30, "red"],
-    [800, 400, 30, 30, tank_image, 100, 30, "red"]
+    [1000, 200, 30, 30, tank_image, 100, 3, 30, "red", "left"],
+    [1000, 300, 30, 30, tank_image, 100, 3, 30, "red", "left"]
     ],
     (
     (500, 300),
@@ -58,9 +49,9 @@ round1 = Round(
 
 round2 = Round(
     [
-    [1000, 200, 30, 30, tank_image, 100, 30, "red"],
-    [1000, 300, 30, 30, tank_image, 100, 30, "red"],
-    [1000, 400, 30, 30, tank_image, 100, 30, "red"]
+    [1000, 200, 30, 30, tank_image, 100, 3, 30, "red", "left"],
+    [1000, 300, 30, 30, tank_image, 100, 3, 30, "red", "left"],
+    [1000, 400, 30, 30, tank_image, 100, 3, 30, "red", "left"]
     ],
     (
     (500, 300),
@@ -80,7 +71,7 @@ round2 = Round(
 
 round3 = Round(
     [
-    [1000, 200, 30, 30, tank_image, 100, 30, "red"]
+    [1000, 200, 30, 30, tank_image, 100, 3, 30, "red", "left"]
     ],
     (
     (500, 300),
@@ -98,10 +89,32 @@ round3 = Round(
     ), player, fon, wall_image, player_image)
 
 
-button_start = Button(600, 300, "START", 50)
-button_start.onclick(round3.game())
 
-player.bufs = []
+
+
+bufs = {"damage + 10": 10,
+        "damage + 20": 20,
+        "damage + 30": 30,
+        "damage + 70": 70,
+
+        "speed + 1": 1,
+        "speed + 2": 2,
+        "speed + 3": 3,
+
+        "hp + 30": 10,
+        "hp + 70": 70,
+        "hp + 110": 110,
+        "hp + 200": 200
+}
+
+
+
+
+
+
+
+button_start = Button(600, 300, "START", 50)
+button_start.onclick(round1.game())
 
 
 running = True
@@ -112,11 +125,13 @@ while running:
             pygame.quit()
             exit()
 
-    # game_part_round()
+
     fon.draw(screen)
 
     button_start.update()
-    button_start.draw(screen)
+    win = round1.game()
+    if win:
+        round2.game()
 
     # оновлення дисплея та обмеження частоти
     pygame.display.flip()
