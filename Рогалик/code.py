@@ -5,7 +5,7 @@ from classes import *
 
 player_img = pygame.image.load("Green_tank.png")
 player_image = pygame.transform.scale(player_img, (70, 70))
-player = Entiti(0, 200, 30, 30, player_image, 10, 3, 300, "green", "right")
+player = Entiti(0, 200, 30, 30, player_image, 510, 8, 160, "green", "right")
 
 
 tank_img = pygame.image.load("Red_tank.png")
@@ -35,8 +35,8 @@ fon = Object(0, 0, 1000, 1000, img_fon)
 
 round1 = Round(
     [
-    [1000, 200, 30, 30, tank_image, 100, 3, 30, "red", "left"],
-    [1000, 300, 30, 30, tank_image, 100, 3, 30, "red", "left"]
+    [1000, 200, 30, 30, tank_image, 100, 1.5, 30, "red", "left"],
+    [1000, 300, 30, 30, tank_image, 100, 2, 30, "red", "left"]
     ],
     (
     (500, 300),
@@ -51,7 +51,7 @@ round2 = Round(
     [
     [1000, 200, 30, 30, tank_image, 100, 3, 30, "red", "left"],
     [1000, 300, 30, 30, tank_image, 100, 3, 30, "red", "left"],
-    [1000, 400, 30, 30, tank_image, 100, 3, 30, "red", "left"]
+    [1000, 400, 30, 30, tank_image, 100, 4, 30, "red", "left"]
     ],
     (
     (500, 300),
@@ -71,7 +71,10 @@ round2 = Round(
 
 round3 = Round(
     [
-    [1000, 200, 30, 30, tank_image, 100, 3, 30, "red", "left"]
+    [1000, 200, 30, 30, tank_image, 100, 3, 30, "red", "left"],
+    [1000, 200, 30, 30, tank_image, 100, 3, 30, "red", "left"],
+    [1000, 200, 30, 30, tank_image, 100, 4, 30, "red", "left"],
+    [1000, 200, 30, 30, tank_image, 100, 5, 30, "red", "left"]
     ],
     (
     (500, 300),
@@ -92,19 +95,20 @@ round3 = Round(
 
 
 
-bufs = {"damage + 10": 10,
-        "damage + 20": 20,
-        "damage + 30": 30,
-        "damage + 70": 70,
+bufs = {
+        "hp + 30": 10,
+        "hp + 70": 70,
+        "hp + 110": 110,
+        "hp + 200": 200,
 
         "speed + 1": 1,
         "speed + 2": 2,
         "speed + 3": 3,
 
-        "hp + 30": 10,
-        "hp + 70": 70,
-        "hp + 110": 110,
-        "hp + 200": 200
+        "damage + 10": 10,
+        "damage + 20": 20,
+        "damage + 30": 30,
+        "damage + 70": 70
 }
 
 
@@ -128,10 +132,14 @@ while running:
 
     fon.draw(screen)
 
+    win1, win2, win3 = False, False, False
+
     button_start.update()
-    win = round1.game()
-    if win:
-        round2.game()
+    win1 = round1.game()
+    if win1:
+        win2 = round2.game()
+        if win2:
+            win3 = round3.game()
 
     # оновлення дисплея та обмеження частоти
     pygame.display.flip()
