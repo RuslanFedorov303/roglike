@@ -82,7 +82,7 @@ class Object:
         self.x, self.y = x, y
         self.width, self.height = width, height
         self.img = img
-        self.rect = pygame.Rect(x, y, width, height)
+        self.rect = pygame.Rect(x, y, self.width, self.height)
 
 
     def draw(self, screen):
@@ -108,15 +108,14 @@ class Entiti(Object):
         duration = self.end_time - self.start_time
 
         if duration >= 0.7:
-            if directore == 'up':      bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "up", self.comand, self.damage))
-            elif directore == 'down':  bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "down", self.comand, self.damage))
-            elif directore == 'left':  bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "left", self.comand, self.damage))
-            elif directore == 'right': bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "right", self.comand, self.damage))
+            if directore == 'up':      bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "up", self.comand, self.damage, self.speed*2.5))
+            elif directore == 'down':  bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "down", self.comand, self.damage, self.speed*2.5))
+            elif directore == 'left':  bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "left", self.comand, self.damage, self.speed*2.5))
+            elif directore == 'right': bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "right", self.comand, self.damage, self.speed*2.5))
             self.start_time = time.time()
 
 
     def collide_bullets(self, bullets_c):
-        # global bullets
         for bullet in bullets_c:
             if self.rect.colliderect(bullet.rect) and bullet.comand != self.comand:
                 self.hp -= bullet.damage
@@ -223,6 +222,8 @@ class Bullet(Object):
 class Round:
     def __init__(self, tanks, coords_walls, player, fon, wall_image, player_image):
         self.player = player
+        self.player.hp_max = self.player.hp
+        self.player_hp = Label(0, 600, 60, str(self.player.hp), "#ff4d4d")
         self.player_image = player_image
         self.fon = fon
         self.font = Label(550, 300, 80, "Pause")
@@ -253,6 +254,7 @@ class Round:
             self.fon.draw(screen)
             self.player.draw(screen)
 
+
             for tank in self.tanks:
                 if not tank.hp <= 0:
                     tank.draw(screen)
@@ -271,6 +273,10 @@ class Round:
 
 
     def game(self):
+        self.player.rect.x = self.player.x
+        self.player.rect.y = self.player.y
+
+
         while True:
             # обробка подій
             for event in pygame.event.get():
@@ -287,6 +293,7 @@ class Round:
 
             # відображення
             if len(self.tanks) == 0:
+                self.player.hp = self.player.hp_max
                 return True
 
             if self.player.hp <= 0:
@@ -344,6 +351,10 @@ class Round:
 
             for wall in self.walls:
                 wall.draw(screen)
+
+
+            self.player_hp.set_text(str(self.player.hp))
+            self.player_hp.draw(screen)
 
 
             # оновлення дисплея
