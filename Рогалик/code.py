@@ -1,11 +1,13 @@
-import pygame.font
+import random
+import pygame
 from classes import *
 
 
 
 player_img = pygame.image.load("Green_tank.png")
 player_image = pygame.transform.scale(player_img, (70, 70))
-player = Entiti(0, 200, 30, 30, player_image, 510, 8, 160, "green", "right")
+# player_defoult[0, 200, 30, 30, player_image, 100, 2, 1000, "green", "right"]
+player = Entiti(0, 200, 30, 30, player_image, 100, 2, 1000, "green", "right")
 
 
 tank_img = pygame.image.load("Red_tank.png")
@@ -40,10 +42,10 @@ round1 = Round(
     ],
     (
     (500, 300),
-    (500, 350),
-    (500, 400),
-    (500, 450),
-    (500, 500)
+    (500, 340),
+    (500, 380),
+    (500, 420),
+    (500, 460)
     ), player, fon, wall_image, player_image)
 
 
@@ -55,17 +57,10 @@ round2 = Round(
     ],
     (
     (500, 300),
-    (500, 350),
-    (500, 400),
-    (500, 450),
-    (550, 300),
-    (550, 350),
-    (550, 400),
-    (550, 450),
-    (600, 300),
-    (600, 350),
-    (600, 400),
-    (600, 450)
+    (500, 340),
+    (500, 380),
+    (500, 420),
+    (550, 460)
     ), player, fon, wall_image, player_image)
 
 
@@ -96,25 +91,25 @@ round3 = Round(
 
 
 bufs = {
-        "hp + 30": 10,
-        "hp + 70": 70,
-        "hp + 110": 110,
-        "hp + 200": 200,
+        "hp": 10,
+        "hp": 70,
+        "hp": 110,
+        "hp": 200,
 
-        "speed + 1": 1,
-        "speed + 2": 2,
-        "speed + 3": 3,
+        "speed": 1,
+        "speed": 2,
+        "speed": 3,
 
-        "damage + 10": 10,
-        "damage + 20": 20,
-        "damage + 30": 30,
-        "damage + 70": 70
+        "damage": 10,
+        "damage": 20,
+        "damage": 30,
+        "damage": 70
 }
 
 
 
-
-
+game = Game([round1, round2, round3, round2], bufs, fon, player)
+game.csicle()
 
 
 button_start = Button(600, 300, "START", 50)
@@ -137,9 +132,21 @@ while running:
     button_start.update()
     win1 = round1.game()
     if win1:
+        buf, buf2 = random.choice(list(bufs.items()))
+        print(buf, buf2)
+        if buf == "hp":     player.hp += buf2
+        if buf == "speed":  player.speed += buf2
+        if buf == "damage": player.damage += buf2
+
         win2 = round2.game()
         if win2:
-            win3 = round3.game()
+            buf, buf2 = random.choice(list(bufs.items()))
+            print(buf, buf2)
+            if buf == "hp":     player.hp += buf2
+            if buf == "speed":  player.speed += buf2
+            if buf == "damage": player.damage += buf2
+
+            win3 = round1.game()
 
     # оновлення дисплея та обмеження частоти
     pygame.display.flip()
