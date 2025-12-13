@@ -1,10 +1,10 @@
 import pygame
 import random
 import  time
+
+
+
 pygame.init()
-
-
-bullets = []
 screen = pygame.display.set_mode((1300, 700))
 clock = pygame.time.Clock()
 
@@ -103,23 +103,25 @@ class Entiti(Object):
         self.end_time = 0
 
 
-    def shot(self, directore):
+    def shot(self, directore, list):
         self.end_time = time.time()
         duration = self.end_time - self.start_time
 
         if duration >= 0.7:
-            if directore == 'up':      bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "up", self.comand, self.damage, self.speed*2.5))
-            elif directore == 'down':  bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "down", self.comand, self.damage, self.speed*2.5))
-            elif directore == 'left':  bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "left", self.comand, self.damage, self.speed*2.5))
-            elif directore == 'right': bullets.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "right", self.comand, self.damage, self.speed*2.5))
+            if directore == 'up':      list.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "up", self.comand, self.damage, self.speed*2.5))
+            elif directore == 'down':  list.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "down", self.comand, self.damage, self.speed*2.5))
+            elif directore == 'left':  list.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "left", self.comand, self.damage, self.speed*2.5))
+            elif directore == 'right': list.append(Bullet(self.rect.centerx, self.rect.centery, 10, 10, "right", self.comand, self.damage, self.speed*2.5))
             self.start_time = time.time()
+            return list
 
 
-    def collide_bullets(self, bullets_c):
-        for bullet in bullets_c:
+    def collide_bullets(self, bullets, list):
+        for bullet in bullets:
             if self.rect.colliderect(bullet.rect) and bullet.comand != self.comand:
                 self.hp -= bullet.damage
-                bullets.remove(bullet)
+                list.remove(bullet)
+        return list
 
 
     def collide_walls(self, walls):
@@ -229,6 +231,7 @@ class Round:
         self.font = Label(550, 300, 80, "Pause")
         self.tanks = []
         self.walls = []
+        self.bullets = []
 
 
         for x, y, width, height, image, hp, speed, damage, comand, defoult_directore in tanks:
@@ -260,7 +263,7 @@ class Round:
                     tank.draw(screen)
 
 
-            for bullet in bullets:
+            for bullet in self.bullets:
                 bullet.draw(screen)
 
 
@@ -288,7 +291,7 @@ class Round:
                         self.pause()
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.player.shot(self.player.directore)
+                    self.player.shot(self.player.directore, self.bullets)
 
 
             # відображення
@@ -327,7 +330,7 @@ class Round:
 
 
             self.fon.draw(screen)
-            self.player.collide_bullets(bullets)
+            self.player.collide_bullets(self.bullets, self.bullets)
             self.player.collide_walls(self.walls)
             self.player.draw(screen)
 
@@ -336,15 +339,20 @@ class Round:
                 if tank.hp <= 0:
                     self.tanks.remove(tank)
                 tank.bot_random_rotate()
-                tank.collide_bullets(bullets)
-                tank.shot(tank.directore)
+                tank.collide_bullets(self.bullets, self.bullets)
+                tank.shot(tank.directore, self.bullets)
                 tank.collide_walls(self.walls)
                 tank.draw(screen)
 
 
-            for bullet in bullets:
-                if len(bullets) > 99:
-                    del bullets[0]
+            for bullet in self.bullets:
+                for wall in self.walls:
+                    if wall.rect.colliderect(bullet.rect):
+                        self.bullets.remove(bullet)
+
+                if len(self.bullets) > 99:
+                    del self.bullets[0]
+
                 bullet.update()
                 bullet.draw(screen)
 
