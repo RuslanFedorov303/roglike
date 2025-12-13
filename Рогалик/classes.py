@@ -1,6 +1,6 @@
 import pygame
 import random
-import  time
+import time
 
 
 
@@ -368,4 +368,65 @@ class Round:
             # оновлення дисплея
             pygame.display.flip()
             clock.tick(50)
-            print(self.player.hp)
+
+
+
+# ---------- Гра ---------- #
+class Game:
+    def __init__(self, rounds, bufs, fon, player):
+        self.rounds = rounds
+        self.bufs = bufs
+        self.fon = fon
+        self.player = player
+        for round in rounds:
+            round.player = self.player
+
+
+    def csicle(self):
+        running = True
+        while running:
+            # обробка подій
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+
+            self.fon.draw(screen)
+            # button_start.update()
+            win1, win2, win3 = False, False, False
+            win1 = self.rounds[0].game()
+
+
+            if win1:
+                buf, buf2 = random.choice(list(self.bufs.items()))
+                print(buf, buf2)
+                if buf == "hp":     self.player.hp += buf2
+                if buf == "speed":  self.player.speed += buf2
+                if buf == "damage": self.player.damage += buf2
+
+                win2 = self.rounds[1].game()
+
+
+                if win2:
+                    buf, buf2 = random.choice(list(self.bufs.items()))
+                    print(buf, buf2)
+                    if buf == "hp":     self.player.hp += buf2
+                    if buf == "speed":  self.player.speed += buf2
+                    if buf == "damage": self.player.damage += buf2
+
+                    win3 = self.rounds[2].game()
+
+
+                    if win3:
+                        buf, buf2 = random.choice(list(self.bufs.items()))
+                        print(buf, buf2)
+                        if buf == "hp":     self.player.hp += buf2
+                        if buf == "speed":  self.player.speed += buf2
+                        if buf == "damage": self.player.damage += buf2
+
+                        win4 = self.rounds[3].game()
+
+            # оновлення дисплея та обмеження частоти
+            pygame.display.flip()
+            clock.tick(50)
