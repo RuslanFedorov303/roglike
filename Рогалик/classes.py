@@ -10,6 +10,7 @@ clock = pygame.time.Clock()
 
 
 
+
 # ---------- Текст для гри ---------- #
 class Label:
     def __init__(self, x, y, size, default_text="text" ,color="black"):
@@ -19,8 +20,10 @@ class Label:
         self.set_text(default_text)
 
 
+
     def set_text(self, text):
         self.image = self.font.render(text, True, self.color)
+
 
 
     def draw(self, screen):
@@ -28,18 +31,26 @@ class Label:
 
 
 
+
 # ---------- Кнопки для гри ---------- #
 class Button:
-    def __init__(self, x, y, text, w):
+    def __init__(self, x, y, text, w, color=(0, 0, 0)):
+        self.rect_image = pygame.transform.scale(
+            pygame.image.load("Button_no_activate.png").convert_alpha(),
+            (w, w/2)
+        )
+
+        self.rect_image_active = pygame.transform.scale(
+            pygame.image.load("Button_activate.png").convert_alpha(),
+            (w, w/2)
+        )
+
         self.rect = pygame.Rect(x, y, w, 50)
-        self.rect_image = pygame.Surface((w, 50))
+        self.color = color
 
-        self.rect_image.fill((0, 0, 0))
-        self.rect_image_active = pygame.Surface((w, 50))
-        self.rect_image_active.fill((0, 0, 0))
 
-        self.font = pygame.font.Font(None, 32)
-        self.text_image = self.font.render(text, True, (100, 0, 0))
+        self.font = pygame.font.Font(None, w//6)
+        self.text_image = self.font.render(text, True, self.color)
         self.text_rect = self.text_image.get_rect()
 
         self.text_rect.x = self.rect.x + 20
@@ -48,31 +59,40 @@ class Button:
         self.fn = None
 
 
-    def update(self):
-        x, y = pygame.mouse.get_pos()
-        collision = self.rect.collidepoint(x, y)
-        if collision:
+
+    def update(self, event):
+        # перевірка наведення миші
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
             self.active = True
-            click = pygame.mouse.get_pressed()[0]
-
-            if click and self.fn:
-                self.fn()
-
         else:
             self.active = False
+
+        # обробка кліку
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 and self.active:
+                if self.fn:
+                    self.fn()
+
 
 
     def draw(self, surface):
         if self.active:
-            surface.blit(self.rect_image, (self.rect.x, self.rect.y))
+            surface.blit(self.rect_image_active, (self.rect.x, self.rect.y))
 
         else:
-            surface.blit(self.rect_image_active, (self.rect.x, self.rect.y))
-        surface.blit(self.text_image, (self.text_rect.x, self.text_rect.y))
+            surface.blit(self.rect_image, (self.rect.x, self.rect.y))
+        surface.blit(self.text_image, (self.text_rect.x*1.04, self.text_rect.y*1.1))
+
+
+
+    def set_text(self, new_text):
+        self.text_image = self.font.render(new_text, True, self.color)
+
 
 
     def onclick(self, fn):
         self.fn = fn
+
 
 
 
@@ -85,8 +105,10 @@ class Object:
         self.rect = pygame.Rect(x, y, self.width, self.height)
 
 
+
     def draw(self, screen):
         screen.blit(self.img, (self.rect.left, self.rect.top))
+
 
 
 
@@ -103,6 +125,7 @@ class Entiti(Object):
         self.end_time = 0
 
 
+
     def shot(self, directore, list):
         self.end_time = time.time()
         duration = self.end_time - self.start_time
@@ -116,12 +139,14 @@ class Entiti(Object):
             return list
 
 
+
     def collide_bullets(self, bullets, list):
         for bullet in bullets:
             if self.rect.colliderect(bullet.rect) and bullet.comand != self.comand:
                 self.hp -= bullet.damage
                 list.remove(bullet)
         return list
+
 
 
     def collide_walls(self, walls):
@@ -131,6 +156,7 @@ class Entiti(Object):
                 elif self.directore == 'down':  self.rect.y -= self.speed
                 elif self.directore == 'left':  self.rect.x += self.speed
                 elif self.directore == 'right': self.rect.x -= self.speed
+
 
 
 
@@ -145,6 +171,7 @@ class Bot(Entiti):
         self.directories = ["up", "down", "left", "right"]
 
 
+
     def bot_random_rotate(self):
         self.end_time_botMove = time.time()
         duration = self.end_time_botMove - self.start_time_botMove
@@ -157,6 +184,7 @@ class Bot(Entiti):
             new_img = pygame.transform.rotate(self.tank_image, 90)
             self.img = new_img
 
+
         elif self.directore == 'down':
             if not self.rect.y > 600:
                 self.rect.y += self.speed
@@ -164,12 +192,14 @@ class Bot(Entiti):
             new_img = pygame.transform.rotate(self.tank_image, 270)
             self.img = new_img
 
+
         elif self.directore == 'left':
             if not self.rect.x < 0:
                 self.rect.x -= self.speed
 
             new_img = pygame.transform.rotate(self.tank_image, 180)
             self.img = new_img
+
 
         elif self.directore == 'right':
             if not self.rect.x > 1200:
@@ -184,11 +214,13 @@ class Bot(Entiti):
             self.start_time_botMove = time.time()
 
 
+
     def bot_move(self):
         if self.directore == "up":      self.rect.y -= self.speed
         elif self.directore == "down":  self.rect.y += self.speed
         elif self.directore == "left":  self.rect.x -= self.speed
         elif self.directore == "right": self.rect.x += self.speed
+
 
 
 
@@ -208,6 +240,7 @@ class Bullet(Object):
         elif self.direction == "right": self.img = pygame.transform.rotate(self.img, 0)
 
 
+
     def update(self):
         if self.direction == "up":      self.rect.y -= self.speed
         elif self.direction == "down":  self.rect.y += self.speed
@@ -215,8 +248,10 @@ class Bullet(Object):
         elif self.direction == "right": self.rect.x += self.speed
 
 
+
     def draw(self, screen):
         screen.blit(self.img, (self.rect.left, self.rect.top))
+
 
 
 
@@ -240,6 +275,7 @@ class Round:
 
         for x, y in coords_walls:
             self.walls.append(Object(x, y, 30, 30, wall_image))
+
 
 
     def pause(self):
@@ -273,6 +309,7 @@ class Round:
 
             pygame.display.flip()
             clock.tick(50)
+
 
 
     def game(self):
@@ -371,18 +408,75 @@ class Round:
 
 
 
+
 # ---------- Гра ---------- #
 class Game:
     def __init__(self, rounds, bufs, fon, player):
         self.rounds = rounds
         self.bufs = bufs
         self.fon = fon
+        self.def_player = player
         self.player = player
-        for round in rounds:
-            round.player = self.player
 
 
-    def csicle(self):
+        self.button1 = Button(320, 300, "", 200)
+        self.button2 = Button(550, 300, "", 200)
+        self.button3 = Button(780, 300, "", 200)
+
+
+
+    def random_buf(self):
+        key = random.choice(list(self.bufs.keys()))
+        value = random.choice(self.bufs[key])
+        return key, value
+
+
+
+    def new_bufs(self, buf1, buf2, buf3):
+        def button_return(buf):
+            if buf[0] == "hp":     self.player.hp += buf[1]
+            if buf[0] == "speed":  self.player.speed += buf[1]
+            if buf[0] == "damage": self.player.damage += buf[1]
+            nonlocal running
+            running = False
+
+
+        self.button1.onclick(lambda: button_return(buf1))
+        self.button2.onclick(lambda: button_return(buf2))
+        self.button3.onclick(lambda: button_return(buf3))
+
+        self.button1.set_text(f"{buf1[0]} + {buf1[1]}")
+        self.button2.set_text(f"{buf2[0]} + {buf2[1]}")
+        self.button3.set_text(f"{buf3[0]} + {buf3[1]}")
+
+
+        running = True
+        while running:
+            # обробка подій
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+
+                self.button1.update(event)
+                self.button2.update(event)
+                self.button3.update(event)
+
+
+            self.fon.draw(screen)
+            self.button1.draw(screen)
+            self.button2.draw(screen)
+            self.button3.draw(screen)
+
+
+            # оновлення дисплея та обмеження частоти
+            pygame.display.flip()
+            clock.tick(50)
+
+
+
+    def cycle(self):
         running = True
         while running:
             # обробка подій
@@ -393,39 +487,120 @@ class Game:
 
 
             self.fon.draw(screen)
-            # button_start.update()
-            win1, win2, win3 = False, False, False
+            self.player = self.def_player
+            win1, win2, win3, win4, win5, win6, win7, win8, win9, win10 = False, False, False, False, False, False, False, False, False, False
             win1 = self.rounds[0].game()
 
 
+            # Перший раунд 🧨
             if win1:
-                buf, buf2 = random.choice(list(self.bufs.items()))
-                print(buf, buf2)
-                if buf == "hp":     self.player.hp += buf2
-                if buf == "speed":  self.player.speed += buf2
-                if buf == "damage": self.player.damage += buf2
+                self.new_bufs(
+                    self.random_buf(),
+                    self.random_buf(),
+                    self.random_buf()
+                )
 
                 win2 = self.rounds[1].game()
 
 
-                if win2:
-                    buf, buf2 = random.choice(list(self.bufs.items()))
-                    print(buf, buf2)
-                    if buf == "hp":     self.player.hp += buf2
-                    if buf == "speed":  self.player.speed += buf2
-                    if buf == "damage": self.player.damage += buf2
+                # Другий раунд 🎃
+                if win2 and len(self.rounds) == 2:
+                    self.new_bufs(
+                        self.random_buf(),
+                        self.random_buf(),
+                        self.random_buf()
+                    )
 
                     win3 = self.rounds[2].game()
 
 
-                    if win3:
-                        buf, buf2 = random.choice(list(self.bufs.items()))
-                        print(buf, buf2)
-                        if buf == "hp":     self.player.hp += buf2
-                        if buf == "speed":  self.player.speed += buf2
-                        if buf == "damage": self.player.damage += buf2
+                    # Третій раунд 🎇
+                    if win3 and len(self.rounds) == 3:
+                        self.new_bufs(
+                            self.random_buf(),
+                            self.random_buf(),
+                            self.random_buf()
+                        )
 
                         win4 = self.rounds[3].game()
+
+
+                        # Четвертий раунд 🎄
+                        if win4 and len(self.rounds) == 4:
+                            self.new_bufs(
+                                self.random_buf(),
+                                self.random_buf(),
+                                self.random_buf()
+                            )
+
+                            win5 = self.rounds[4].game()
+
+
+                            # Пятий раунд 🎫
+                            if win5 and len(self.rounds) == 5:
+                                self.new_bufs(
+                                    self.random_buf(),
+                                    self.random_buf(),
+                                    self.random_buf()
+                                )
+
+                                win6 = self.rounds[5].game()
+
+
+                                # Шостий раунд 🧢
+                                if win6 and len(self.rounds) == 6:
+                                    self.new_bufs(
+                                        self.random_buf(),
+                                        self.random_buf(),
+                                        self.random_buf()
+                                    )
+
+                                    win7 = self.rounds[6].game()
+
+
+                                    # Сьомий раунд 🔮
+                                    if win7 and len(self.rounds) == 7:
+                                        self.new_bufs(
+                                            self.random_buf(),
+                                            self.random_buf(),
+                                            self.random_buf()
+                                        )
+
+                                        win8 = self.rounds[7].game()
+
+
+                                        # Восьмий раунд 🪀
+                                        if win8 and len(self.rounds) == 8:
+                                            self.new_bufs(
+                                                self.random_buf(),
+                                                self.random_buf(),
+                                                self.random_buf()
+                                            )
+
+                                            win9 = self.rounds[8].game()
+
+
+                                            # Девятий раунд 🥼
+                                            if win9 and len(self.rounds) == 9:
+                                                self.new_bufs(
+                                                    self.random_buf(),
+                                                    self.random_buf(),
+                                                    self.random_buf()
+                                                )
+
+                                                win10 = self.rounds[9].game()
+
+
+                                                # Десятий раунд 🎩
+                                                if win10 and len(self.rounds) == 10:
+                                                    self.new_bufs(
+                                                        self.random_buf(),
+                                                        self.random_buf(),
+                                                        self.random_buf()
+                                                    )
+
+                                                    self.rounds[10].game()
+
 
             # оновлення дисплея та обмеження частоти
             pygame.display.flip()
