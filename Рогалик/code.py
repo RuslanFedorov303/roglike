@@ -7,7 +7,7 @@ from classes import *
 player_img = pygame.image.load("Green_tank.png")
 player_image = pygame.transform.scale(player_img, (70, 70))
 # player_defoult[0, 200, 30, 30, player_image, 100, 2, 1000, "green", "right"]
-player = Entiti(0, 200, 30, 30, player_image, 100, 2, 1000, "green", "right")
+player = Entiti(0, 200, 30, 30, player_image, 100, 5, 1000, "green", "right")
 
 
 tank_img = pygame.image.load("Red_tank.png")
@@ -37,8 +37,7 @@ fon = Object(0, 0, 1000, 1000, img_fon)
 
 round1 = Round(
     [
-    [1000, 200, 30, 30, tank_image, 100, 1.5, 30, "red", "left"],
-    [1000, 300, 30, 30, tank_image, 100, 2, 30, "red", "left"]
+    [1000, 200, 30, 30, tank_image, 100, 1.5, 30, "red", "left"]
     ],
     (
     (500, 300),
@@ -91,25 +90,15 @@ round3 = Round(
 
 
 bufs = {
-        "hp": 10,
-        "hp": 70,
-        "hp": 110,
-        "hp": 200,
-
-        "speed": 1,
-        "speed": 2,
-        "speed": 3,
-
-        "damage": 10,
-        "damage": 20,
-        "damage": 30,
-        "damage": 70
+    "hp": [10, 30, 70, 80, 110, 150, 200],
+    "speed": [1, 1.5, 2, 2.5, 3],
+    "damage": [10, 20, 30, 40, 50, 70]
 }
 
 
 
-game = Game([round1, round2, round3, round2], bufs, fon, player)
-game.csicle()
+game = Game([round1, round2, round3], bufs, fon, player)
+game.cycle()
 
 
 button_start = Button(600, 300, "START", 50)
@@ -126,27 +115,8 @@ while running:
 
 
     fon.draw(screen)
-
-    win1, win2, win3 = False, False, False
-
     button_start.update()
-    win1 = round1.game()
-    if win1:
-        buf, buf2 = random.choice(list(bufs.items()))
-        print(buf, buf2)
-        if buf == "hp":     player.hp += buf2
-        if buf == "speed":  player.speed += buf2
-        if buf == "damage": player.damage += buf2
 
-        win2 = round2.game()
-        if win2:
-            buf, buf2 = random.choice(list(bufs.items()))
-            print(buf, buf2)
-            if buf == "hp":     player.hp += buf2
-            if buf == "speed":  player.speed += buf2
-            if buf == "damage": player.damage += buf2
-
-            win3 = round1.game()
 
     # оновлення дисплея та обмеження частоти
     pygame.display.flip()
