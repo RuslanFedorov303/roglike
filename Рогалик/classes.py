@@ -259,14 +259,18 @@ class Bullet(Object):
 class Round:
     def __init__(self, tanks, coords_walls, player, fon, wall_image, player_image):
         self.player = player
-        self.player.hp_max = self.player.hp
         self.player_hp = Label(0, 600, 60, str(self.player.hp), "#ff4d4d")
         self.player_image = player_image
+
         self.fon = fon
         self.font = Label(550, 300, 80, "Pause")
+
         self.tanks = []
         self.walls = []
         self.bullets = []
+
+        self.button_menu = Button(550, 400, "Вийти в меню", 200, (200, 50, 50))
+        self.button_menu.onclick(lambda: )
 
 
         for x, y, width, height, image, hp, speed, damage, comand, defoult_directore in tanks:
@@ -315,6 +319,7 @@ class Round:
     def game(self):
         self.player.rect.x = self.player.x
         self.player.rect.y = self.player.y
+        self.player.hp = self.player.max_hp
 
 
         while True:
@@ -333,7 +338,7 @@ class Round:
 
             # відображення
             if len(self.tanks) == 0:
-                self.player.hp = self.player.hp_max
+                self.player.hp = self.player.max_hp
                 return True
 
             if self.player.hp <= 0:
@@ -417,6 +422,7 @@ class Game:
         self.fon = fon
         self.def_player = player
         self.player = player
+        self.running = True
 
 
         self.button1 = Button(320, 300, "", 200)
@@ -434,12 +440,13 @@ class Game:
 
     def new_bufs(self, buf1, buf2, buf3):
         def button_return(buf):
-            if buf[0] == "hp":     self.player.hp += buf[1]
+            if buf[0] == "hp":     self.player.max_hp += buf[1]
             if buf[0] == "speed":  self.player.speed += buf[1]
             if buf[0] == "damage": self.player.damage += buf[1]
-            nonlocal running
-            running = False
+            self.running = False
 
+
+        self.running = True
 
         self.button1.onclick(lambda: button_return(buf1))
         self.button2.onclick(lambda: button_return(buf2))
@@ -450,8 +457,7 @@ class Game:
         self.button3.set_text(f"{buf3[0]} + {buf3[1]}")
 
 
-        running = True
-        while running:
+        while self.running:
             # обробка подій
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -487,13 +493,13 @@ class Game:
 
 
             self.fon.draw(screen)
-            self.player = self.def_player
+            # self.player = self.def_player
             win1, win2, win3, win4, win5, win6, win7, win8, win9, win10 = False, False, False, False, False, False, False, False, False, False
             win1 = self.rounds[0].game()
 
 
             # Перший раунд 🧨
-            if win1:
+            if win1 and len(self.rounds) >= 2:
                 self.new_bufs(
                     self.random_buf(),
                     self.random_buf(),
@@ -504,7 +510,7 @@ class Game:
 
 
                 # Другий раунд 🎃
-                if win2 and len(self.rounds) == 2:
+                if win2 and len(self.rounds) >= 3:
                     self.new_bufs(
                         self.random_buf(),
                         self.random_buf(),
@@ -515,7 +521,7 @@ class Game:
 
 
                     # Третій раунд 🎇
-                    if win3 and len(self.rounds) == 3:
+                    if win3 and len(self.rounds) >= 4:
                         self.new_bufs(
                             self.random_buf(),
                             self.random_buf(),
@@ -526,7 +532,7 @@ class Game:
 
 
                         # Четвертий раунд 🎄
-                        if win4 and len(self.rounds) == 4:
+                        if win4 and len(self.rounds) >= 5:
                             self.new_bufs(
                                 self.random_buf(),
                                 self.random_buf(),
@@ -537,7 +543,7 @@ class Game:
 
 
                             # Пятий раунд 🎫
-                            if win5 and len(self.rounds) == 5:
+                            if win5 and len(self.rounds) >= 6:
                                 self.new_bufs(
                                     self.random_buf(),
                                     self.random_buf(),
@@ -548,7 +554,7 @@ class Game:
 
 
                                 # Шостий раунд 🧢
-                                if win6 and len(self.rounds) == 6:
+                                if win6 and len(self.rounds) >= 7:
                                     self.new_bufs(
                                         self.random_buf(),
                                         self.random_buf(),
@@ -559,7 +565,7 @@ class Game:
 
 
                                     # Сьомий раунд 🔮
-                                    if win7 and len(self.rounds) == 7:
+                                    if win7 and len(self.rounds) >= 8:
                                         self.new_bufs(
                                             self.random_buf(),
                                             self.random_buf(),
@@ -570,7 +576,7 @@ class Game:
 
 
                                         # Восьмий раунд 🪀
-                                        if win8 and len(self.rounds) == 8:
+                                        if win8 and len(self.rounds) >= 9:
                                             self.new_bufs(
                                                 self.random_buf(),
                                                 self.random_buf(),
@@ -581,7 +587,7 @@ class Game:
 
 
                                             # Девятий раунд 🥼
-                                            if win9 and len(self.rounds) == 9:
+                                            if win9 and len(self.rounds) >= 10:
                                                 self.new_bufs(
                                                     self.random_buf(),
                                                     self.random_buf(),
@@ -592,7 +598,7 @@ class Game:
 
 
                                                 # Десятий раунд 🎩
-                                                if win10 and len(self.rounds) == 10:
+                                                if win10 and len(self.rounds) >= 11:
                                                     self.new_bufs(
                                                         self.random_buf(),
                                                         self.random_buf(),
@@ -602,6 +608,4 @@ class Game:
                                                     self.rounds[10].game()
 
 
-            # оновлення дисплея та обмеження частоти
-            pygame.display.flip()
-            clock.tick(50)
+            running = False
