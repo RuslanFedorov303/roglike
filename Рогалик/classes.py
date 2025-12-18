@@ -135,10 +135,10 @@ class Entiti(Object):
         duration = self.end_time - self.start_time
 
         if duration >= 0.7:
-            if direction == 'up':      list.append(Bullet(self.rect.centerx, self.rect.centery, 1, 1, "up", self.comand, self.damage, self.speed*2.5))
-            elif direction == 'down':  list.append(Bullet(self.rect.centerx, self.rect.centery, 1, 1, "down", self.comand, self.damage, self.speed*2.5))
-            elif direction == 'left':  list.append(Bullet(self.rect.centerx, self.rect.centery, 1, 1, "left", self.comand, self.damage, self.speed*2.5))
-            elif direction == 'right': list.append(Bullet(self.rect.centerx, self.rect.centery, 1, 1, "right", self.comand, self.damage, self.speed*2.5))
+            if direction == 'up':      list.append(Bullet(self.rect.centerx, self.rect.centery, 20, 20, "up", self.comand, self.damage, self.speed*2.5))
+            elif direction == 'down':  list.append(Bullet(self.rect.centerx, self.rect.centery, 20, 20, "down", self.comand, self.damage, self.speed*2.5))
+            elif direction == 'left':  list.append(Bullet(self.rect.centerx, self.rect.centery, 20, 20, "left", self.comand, self.damage, self.speed*2.5))
+            elif direction == 'right': list.append(Bullet(self.rect.centerx, self.rect.centery, 20, 20, "right", self.comand, self.damage, self.speed*2.5))
             self.start_time = time.time()
             return list
 
@@ -713,4 +713,5 @@ class Game:
 
 
             pygame.mixer.music.stop()
+
             running = False
